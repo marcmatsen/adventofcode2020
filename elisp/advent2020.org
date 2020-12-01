@@ -115,49 +115,49 @@ In your expense report, what is the product of the three entries that sum to 202
 
 #+begin_src emacs-lisp
 
-      ;; Lets do it the hacky way. Recursive would be better
+  ;; Lets do it the hacky way. Recursive would be better
 
-      (defun should-skip (a b c)
-	"Skip if any of a b c are the same"
-	(or
-	 (eq a b)
-	 (eq a c)
-	 (eq b c)
-	 )
-	)
+  (defun should-skip (a b c)
+    "Skip if any of a b c are the same"
+    (or
+     (eq a b)
+     (eq a c)
+     (eq b c)
+     )
+    )
 
-      (defun find-sum-triplet (vector goal)
-	"Find three items in a vector that add up to goal"
-	(let
-	    ((x 0) (y 0) (z 0) (found nil))
-	  (while (and (not found) (< x (length vector)))
-	    (while (and (not found) (< y (length vector)))
-	      (while (and (not found) (< z (length vector)))
-		;;(message (format "testing %d %d - %d %d" x y (aref vector x) (aref vector y))) 
-		(if (and (not (should-skip x y z)) (eq (+ (aref vector x) (aref vector y) (aref vector z)) goal))
-		    (setq found (list (aref vector x) (aref vector y) (aref vector z)))
-		  (setq z (+ z 1))
-		  )
-		)
-	      (setq y (+ y 1))
-	      (setq z 0)
+  (defun find-sum-triplet (vector goal)
+    "Find three items in a vector that add up to goal"
+    (let
+	((x 0) (y 0) (z 0) (found nil))
+      (while (and (not found) (< x (length vector)))
+	(while (and (not found) (< y (length vector)))
+	  (while (and (not found) (< z (length vector)))
+	    ;;(message (format "testing %d %d - %d %d" x y (aref vector x) (aref vector y))) 
+	    (if (and (not (should-skip x y z)) (eq (+ (aref vector x) (aref vector y) (aref vector z)) goal))
+		(setq found (list (aref vector x) (aref vector y) (aref vector z)))
+	      (setq z (+ z 1))
 	      )
-	    (setq x (+ x 1))
-	    (setq y 0)
 	    )
-	  found
+	  (setq y (+ y 1))
+	  (setq z 0)
 	  )
+	(setq x (+ x 1))
+	(setq y 0)
 	)
+      found
+      )
+    )
 
-      (find-sum-triplet [1 2 3 4 5] 12)
+  (find-sum-triplet [1 2 3 4 5] 12)
 
-   (defun day1b-answer (filepath)
-     (seq-reduce
-      #'*
-      (find-sum-triplet (read-file-to-number-vector filepath) goal-sum)
-      1))
+  (defun day1b-answer (filepath)
+    (seq-reduce
+     #'*
+     (find-sum-triplet (read-file-to-number-vector filepath) goal-sum)
+     1))
 
-(day1b-answer filepath)
+  (day1b-answer filepath)
 
 #+end_src
 
