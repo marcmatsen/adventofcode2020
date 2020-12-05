@@ -954,4 +954,22 @@ What is the ID of your seat?
       (day5a--solution)
       (day5b--solution)
 
+      (defun day5--tricky-convert-boarding-pass-to-int (boarding-pass)
+	(let (
+	      (conversion-map '((?F . ?0) (?B . ?1) (?L . ?0) (?R . ?1))))
+	  (eval (car (read-from-string
+		      (concat
+		       [?# ?b]
+		       (mapcar (lambda (x) (alist-get x conversion-map)) boarding-pass)))))))
+
+      (day5--tricky-convert-boarding-pass-to-int "BBFFBBFRLL")
+
+      (defun day5b--trickier-solution ()
+	(day5b--find-seat
+	 (day5b--make-seating-vector
+	  (mapcar #'day5--tricky-convert-boarding-pass-to-int (read-lines day5--input-filepath))
+	  (* 128 8)
+	  )))
+
+      (day5b--trickier-solution)
     #+end_src
