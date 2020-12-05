@@ -500,3 +500,458 @@ What do you get if you multiply together the number of trees encountered on each
 
 	    (day3b--solution day3--input-filepath)
     #+end_src
+
+*** Day 4
+
+    #+begin_quote
+    --- Day 4: Passport Processing ---
+You arrive at the airport only to realize that you grabbed your North Pole Credentials instead of your passport. While these documents are extremely similar, North Pole Credentials aren't issued by a country and therefore aren't actually valid documentation for travel in most of the world.
+
+It seems like you're not the only one having problems, though; a very long line has formed for the automatic passport scanners, and the delay could upset your travel itinerary.
+
+Due to some questionable network security, you realize you might be able to solve both of these problems at the same time.
+
+The automatic passport scanners are slow because they're having trouble detecting which passports have all required fields. The expected fields are as follows:
+
+byr (Birth Year)
+iyr (Issue Year)
+eyr (Expiration Year)
+hgt (Height)
+hcl (Hair Color)
+ecl (Eye Color)
+pid (Passport ID)
+cid (Country ID)
+Passport data is validated in batch files (your puzzle input). Each passport is represented as a sequence of key:value pairs separated by spaces or newlines. Passports are separated by blank lines.
+
+Here is an example batch file containing four passports:
+
+ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
+byr:1937 iyr:2017 cid:147 hgt:183cm
+
+iyr:2013 ecl:amb cid:350 eyr:2023 pid:028048884
+hcl:#cfa07d byr:1929
+
+hcl:#ae17e1 iyr:2013
+eyr:2024
+ecl:brn pid:760753108 byr:1931
+hgt:179cm
+
+hcl:#cfa07d eyr:2025 pid:166559648
+iyr:2011 ecl:brn hgt:59in
+The first passport is valid - all eight fields are present. The second passport is invalid - it is missing hgt (the Height field).
+
+The third passport is interesting; the only missing field is cid, so it looks like data from North Pole Credentials, not a passport at all! Surely, nobody would mind if you made the system temporarily ignore missing cid fields. Treat this "passport" as valid.
+
+The fourth passport is missing two fields, cid and byr. Missing cid is fine, but missing any other field is not, so this passport is invalid.
+
+According to the above rules, your improved system would report 2 valid passports.
+
+Count the number of valid passports - those that have all required fields. Treat cid as optional. In your batch file, how many passports are valid?
+
+    #+end_quote
+
+    #+begin_quote
+    --- Part Two ---
+The line is moving more quickly now, but you overhear airport security talking about how passports with invalid data are getting through. Better add some data validation, quick!
+
+You can continue to ignore the cid field, but each other field has strict rules about what values are valid for automatic validation:
+
+byr (Birth Year) - four digits; at least 1920 and at most 2002.
+iyr (Issue Year) - four digits; at least 2010 and at most 2020.
+eyr (Expiration Year) - four digits; at least 2020 and at most 2030.
+hgt (Height) - a number followed by either cm or in:
+If cm, the number must be at least 150 and at most 193.
+If in, the number must be at least 59 and at most 76.
+hcl (Hair Color) - a # followed by exactly six characters 0-9 or a-f.
+ecl (Eye Color) - exactly one of: amb blu brn gry grn hzl oth.
+pid (Passport ID) - a nine-digit number, including leading zeroes.
+cid (Country ID) - ignored, missing or not.
+Your job is to count the passports where all required fields are both present and valid according to the above rules. Here are some example values:
+
+byr valid:   2002
+byr invalid: 2003
+
+hgt valid:   60in
+hgt valid:   190cm
+hgt invalid: 190in
+hgt invalid: 190
+
+hcl valid:   #123abc
+hcl invalid: #123abz
+hcl invalid: 123abc
+
+ecl valid:   brn
+ecl invalid: wat
+
+pid valid:   000000001
+pid invalid: 0123456789
+Here are some invalid passports:
+
+eyr:1972 cid:100
+hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
+
+iyr:2019
+hcl:#602927 eyr:1967 hgt:170cm
+ecl:grn pid:012533040 byr:1946
+
+hcl:dab227 iyr:2012
+ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277
+
+hgt:59cm ecl:zzz
+eyr:2038 hcl:74454a iyr:2023
+pid:3556412378 byr:2007
+Here are some valid passports:
+
+pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
+hcl:#623a2f
+
+eyr:2029 ecl:blu cid:129 byr:1989
+iyr:2014 pid:896056539 hcl:#a97842 hgt:165cm
+
+hcl:#888785
+hgt:164cm byr:2001 iyr:2015 cid:88
+pid:545766238 ecl:hzl
+eyr:2022
+
+iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719
+Count the number of valid passports - those that have all required fields and valid values. Continue to treat cid as optional. In your batch file, how many passports are valid?
+    #+end_quote
+
+    #+begin_src emacs-lisp
+
+      (setq day4--required-fields '(
+				    "byr"
+				    "iyr"  
+				    "eyr"
+				    "hgt"
+				    "hcl"
+				    "ecl"
+				    "pid"
+				    ))
+
+      (setq day4--sample-data-lines '(
+				      ""
+				      "ecl:gry pid:860033327 eyr:2020 hcl:#fffffd"
+				      "byr:1937 iyr:2017 cid:147 hgt:183cm"
+				      ""
+				      "iyr:2013 ecl:amb cid:350 eyr:2023 pid:028048884"
+				      "hcl:#cfa07d byr:1929"
+				      ""
+				      "hcl:#ae17e1 iyr:2013"
+				      "eyr:2024"
+				      "ecl:brn pid:760753108 byr:1931"
+				      "hgt:179cm"
+				      ""
+				      "hcl:#cfa07d eyr:2025 pid:166559648"
+				      "iyr:2011 ecl:brn hgt:59in"
+				      ))
+
+      (defun read-lines-with-blanks (filePath)
+	"Return a list of lines of a file at filePath, retaining empty lines."
+	(with-temp-buffer
+	  (insert-file-contents filePath)
+	  (split-string (buffer-string) "\n" nil)))
+
+      (defun day4--passport-has-required-fields (passport required-fields)
+	"Return true if all strings in list required-fields are present as keys in alist passport"
+	;;(message "validating %s" passport)
+	(seq-every-p (lambda (x) (member x (map-keys passport))) required-fields))
+
+      (defun day4--alist-from-line (line)
+	(mapcar
+	 (lambda (x) 
+	   (let ((split (split-string x ":")))
+	     (cons (pop split) (pop split))))
+	 (split-string line)
+	 )
+	)
+
+      (defun day4--make-passports-from-input (lines)
+	"Return a list of passports, where a passport is an alist of string keys/string values of passport fields"
+	(let (
+	      (acc nil)
+	      (passports nil)
+	      )
+	  (dolist (line lines)
+	    ;;(message "line: %s, typeof: %s" line (type-of line))
+	    (if (or (eq (length line) 0) (eq line nil))
+		(progn
+		  ;;(message "current acc: %s" acc)
+		  ;;(message "current passports: %s" passports)
+		  (when acc
+		    (push acc passports)
+		    (setq acc nil)
+		    )
+		  )
+	      (setq acc (append acc (day4--alist-from-line line))))
+	    )
+	  passports
+	  )
+	)
+
+      (defun day4b--passport-is-valid (passport)
+	(let (result)
+	(setq result (and
+	 (day4--passport-has-required-fields passport day4--required-fields)
+	 (day4--validate-birth-year (cdr (assoc "byr" passport)))
+	 (day4--validate-issue-year (cdr (assoc  "iyr" passport)))
+	 (day4--validate-expiration-year (cdr (assoc "eyr" passport)))
+	 (day4--validate-height (cdr (assoc "hgt" passport)))
+	 (day4--validate-hair-color (cdr (assoc "hcl" passport)))
+	 (day4--validate-eye-color (cdr (assoc "ecl" passport)))
+	 (day4--validate-passport-id (cdr (assoc "pid" passport)))))
+	(message "passport: %s result: %s" passport result)
+	result
+	)
+	)
+
+      (defun day4a--passport-is-valid (passport)
+	(day4--passport-has-required-fields passport day4--required-fields))
+
+      (defun day4--validate-birth-year (x)
+	(let ((num (string-to-number x)))
+	  (and
+	   (string-match (rx (repeat 4 digit)) x)
+	   (<= num 2002)
+	   (>= num 1920)
+	   )
+	  )
+	)
+
+      (defun day4--validate-issue-year (x)
+	(let ((num (string-to-number x)))
+	  (and
+	   (string-match (rx (repeat 4 digit)) x)
+	   (<= num 2020)
+	   (>= num 2010)
+	   )
+	  )
+	)
+
+      (defun day4--validate-expiration-year (x)
+	(let ((num (string-to-number x)))
+	  (and
+	   (eq (string-match (rx (repeat 4 digit)) x) 0)
+	   (<= num 2030)
+	   (>= num 2020)
+	   )
+	  )
+	)
+
+      (defun day4--validate-height (x)
+	;;(debug)
+	(and
+	 (eq (string-match (rx (+ digit) (| "in" "cm")) x) 0)
+	 (let ((unit (substring x -2 nil))
+	       (val (string-to-number (substring x 0 -2))))
+	   ;;(message "val: %d unit: %s" val unit)
+	   (if (equal unit "in")
+	       (and (>= val 59) (<= val 76))
+	     (and (>= val 150) (<= val 193)) ;;cm
+	     )
+	   )
+	 )
+	)
+
+      (defun day4--validate-hair-color (x)
+	(eq (string-match (rx "#" (repeat 6 (in "0-9" "a-f")) line-end) x) 0))
+
+      (defun day4--validate-eye-color (x)
+	(eq (string-match (rx (| "amb" "blu" "brn" "gry" "grn" "hzl" "oth") line-end) x) 0))
+
+      (defun day4--validate-passport-id (x)
+	(eq (string-match (rx (repeat 9 digit) line-end) x) 0))
+
+      (setq day4b--sample-invalid-lines (list
+      "eyr:1972 cid:100"
+      "hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926"
+      ""
+      "iyr:2019"
+      "hcl:#602927 eyr:1967 hgt:170cm"
+      "ecl:grn pid:012533040 byr:1946"
+      ""
+      "hcl:dab227 iyr:2012"
+      "ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277"
+      ""
+      "hgt:59cm ecl:zzz"
+      "eyr:2038 hcl:74454a iyr:2023"
+      "pid:3556412378 byr:2007"
+      ))
+
+      (setq day4b--sample-valid-lines (list
+      "pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980"
+      "hcl:#623a2f"
+      ""
+      "eyr:2029 ecl:blu cid:129 byr:1989"
+      "iyr:2014 pid:896056539 hcl:#a97842 hgt:165cm"
+      ""
+      "hcl:#888785"
+      "hgt:164cm byr:2001 iyr:2015 cid:88"
+      "pid:545766238 ecl:hzl"
+      "eyr:2022"
+      ""
+      "iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021" "pid:093154719"				   
+      ""
+      ))
+
+      ;;should be 4
+      (length (seq-filter (lambda (x) (day4b--passport-is-valid x))
+			  (day4--make-passports-from-input day4b--sample-valid-lines)
+			  ))
+
+      ;;should be 0
+      (length (seq-filter (lambda (x) (day4b--passport-is-valid x))
+			  (day4--make-passports-from-input day4b--sample-invalid-lines)
+			  ))
+
+      (setq day4--input-filepath "~/git/adventofcode2020/input/4/input.txt")
+      (setq day4--input-lines (read-lines day4--input-filepath))
+
+      (defun day4a--solution (filepath)
+	(length (seq-filter
+		 (lambda (x) (day4a--passport-is-valid x))
+		 (day4--make-passports-from-input (read-lines-with-blanks filepath)))))
+
+      (defun day4b--solution (filepath)
+	(length (seq-filter
+		 (lambda (x) (day4b--passport-is-valid x))
+		 (day4--make-passports-from-input (read-lines-with-blanks filepath)))))
+
+      (day4a--solution day4--input-filepath)
+      (day4b--solution day4--input-filepath)
+
+  #+end_src
+
+*** Day 5
+
+    #+begin_quote
+    --- Day 5: Binary Boarding ---
+You board your plane only to discover a new problem: you dropped your boarding pass! You aren't sure which seat is yours, and all of the flight attendants are busy with the flood of people that suddenly made it through passport control.
+
+You write a quick program to use your phone's camera to scan all of the nearby boarding passes (your puzzle input); perhaps you can find your seat through process of elimination.
+
+Instead of zones or groups, this airline uses binary space partitioning to seat people. A seat might be specified like FBFBBFFRLR, where F means "front", B means "back", L means "left", and R means "right".
+
+The first 7 characters will either be F or B; these specify exactly one of the 128 rows on the plane (numbered 0 through 127). Each letter tells you which half of a region the given seat is in. Start with the whole list of rows; the first letter indicates whether the seat is in the front (0 through 63) or the back (64 through 127). The next letter indicates which half of that region the seat is in, and so on until you're left with exactly one row.
+
+For example, consider just the first seven characters of FBFBBFFRLR:
+
+Start by considering the whole range, rows 0 through 127.
+F means to take the lower half, keeping rows 0 through 63.
+B means to take the upper half, keeping rows 32 through 63.
+F means to take the lower half, keeping rows 32 through 47.
+B means to take the upper half, keeping rows 40 through 47.
+B keeps rows 44 through 47.
+F keeps rows 44 through 45.
+The final F keeps the lower of the two, row 44.
+The last three characters will be either L or R; these specify exactly one of the 8 columns of seats on the plane (numbered 0 through 7). The same process as above proceeds again, this time with only three steps. L means to keep the lower half, while R means to keep the upper half.
+
+For example, consider just the last 3 characters of FBFBBFFRLR:
+
+Start by considering the whole range, columns 0 through 7.
+R means to take the upper half, keeping columns 4 through 7.
+L means to take the lower half, keeping columns 4 through 5.
+The final R keeps the upper of the two, column 5.
+So, decoding FBFBBFFRLR reveals that it is the seat at row 44, column 5.
+
+Every seat also has a unique seat ID: multiply the row by 8, then add the column. In this example, the seat has ID 44 * 8 + 5 = 357.
+
+Here are some other boarding passes:
+
+BFFFBBFRRR: row 70, column 7, seat ID 567.
+FFFBBBFRRR: row 14, column 7, seat ID 119.
+BBFFBBFRLL: row 102, column 4, seat ID 820.
+As a sanity check, look through your list of boarding passes. What is the highest seat ID on a boarding pass?
+
+    #+end_quote
+
+    #+begin_quote
+    Ding! The "fasten seat belt" signs have turned on. Time to find your seat.
+
+It's a completely full flight, so your seat should be the only missing boarding pass in your list. However, there's a catch: some of the seats at the very front and back of the plane don't exist on this aircraft, so they'll be missing from your list as well.
+
+Your seat wasn't at the very front or back, though; the seats with IDs +1 and -1 from yours will be in your list.
+
+What is the ID of your seat?
+    #+end_quote
+
+    #+begin_src emacs-lisp
+      (setq day5--input-filepath "~/git/adventofcode2020/input/5/input.txt")
+
+      (defun day5--convert-stringy-binary-to-int (data zero-char one-char)
+	"Convert string of chars representing zero/one in binary to an int"
+	(let (binary-string)
+	  (setq binary-string (concat [?# ?b]
+				      (mapcar (lambda (x) (if (eq zero-char x) ?0 ?1)) data)))
+	  (eval (car (read-from-string binary-string)))))
+
+      (day5--convert-stringy-binary-to-int "FBFBBFF" ?F ?B)
+
+      (substring "FBFBBFFRLR" -3 nil)
+
+      (defun day5a--seatnum-from-boarding-pass (boarding-pass)
+	(let ((row-string (substring boarding-pass 0 -3))
+	      (column-string (substring boarding-pass -3 nil)))
+	  (+
+	   (* 8(day5--convert-stringy-binary-to-int row-string ?F ?B))
+	   (day5--convert-stringy-binary-to-int column-string ?L ?R))))
+
+      (day5a--seatnum-from-boarding-pass "BFFFBBFRRR")
+
+      (defun day5a--get-highest-seat-number (boarding-passes)
+	(seq-max (mapcar #'day5a--seatnum-from-boarding-pass boarding-passes)))
+
+      (setq day5a--sample-boarding-passes
+	    (list
+	     "BFFFBBFRRR"
+	     "FFFBBBFRRR"
+	     "BBFFBBFRLL"
+	     ))
+
+      (day5a--get-highest-seat-number day5a--sample-boarding-passes)
+
+      (defun day5a--solution ()
+	(day5a--get-highest-seat-number (read-lines day5--input-filepath)))
+
+      (defun day5b--make-seating-vector (occupied-seat-numbers max-seats)
+	"Return an int vector of max-seat-length with empty seats nil, full seats t"
+	(let ((seating-vector (make-vector max-seats nil)))
+	  (dolist (occupied-seat-number occupied-seat-numbers seating-vector)
+	    (aset seating-vector occupied-seat-number t)
+	    )
+	  )
+	)
+
+      (day5b--make-seating-vector '(2 3 5 6) 8)
+
+      (defun day5b--find-seat (seating-vector)
+	(let ((is-valid-seating nil)
+	      (found nil)
+	      (i 0)
+	      (seat-full nil))
+	  (while (and (not found) (< i (length seating-vector)))
+	    (setq seat-full (aref seating-vector i))
+	    ;;(message "index %s, is-valid-seating %s, seat-full %s" i is-valid-seating seat-full)
+	    (if (and is-valid-seating (not seat-full))
+		(setq found i))
+	    (if (and (not is-valid-seating) seat-full)
+		(setq is-valid-seating t))
+	    (setq i (+ 1 i))
+	    )
+	  found
+	  )
+	)
+
+      (day5b--find-seat (day5b--make-seating-vector '(2 3 5 6) 8))
+
+      (defun day5b--solution ()
+	(day5b--find-seat
+	 (day5b--make-seating-vector
+	  (mapcar #'day5a--seatnum-from-boarding-pass (read-lines day5--input-filepath))
+	  (* 128 8)
+	  )))
+
+      (day5a--solution)
+      (day5b--solution)
+
+    #+end_src
