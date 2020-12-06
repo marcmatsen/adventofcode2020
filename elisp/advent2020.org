@@ -974,7 +974,7 @@ What is the ID of your seat?
       (day5b--trickier-solution)
     #+end_src
 
-*** COMMENT Day 6
+*** Day 6
 
     #+begin_quote
     --- Day 6: Custom Customs ---
